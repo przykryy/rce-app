@@ -1,10 +1,7 @@
-import React from 'react';
-import 'leaflet/dist/leaflet.css';
-import './App.css';
-import { IStackProps, IStackStyles, IStackTokens, Stack, TextField } from '@fluentui/react';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import React, { useEffect } from 'react';
+import './style.scss';
+import { IStackStyles, IStackTokens, Stack } from '@fluentui/react';
 import Plot from 'react-plotly.js';
-import { Icon } from 'leaflet';
 import { BrandVariants, FluentProvider, createDarkTheme, createLightTheme, Theme, Input } from '@fluentui/react-components';
 
 
@@ -35,17 +32,38 @@ const darkTheme: Theme = {
   ...createDarkTheme(myNewTheme),
 };
 
-
 darkTheme.colorBrandForeground1 = myNewTheme[110];
 darkTheme.colorBrandForeground2 = myNewTheme[120];
 
-function App() {
-  const [value, setValue] = React.useState('');
+export function App() {
+  // const [data, setData] = useState({});
+  useEffect(() => {
+    fetch('/api', {
+      method: 'POST',
+      body: JSON.stringify(
+        {
+          'start': '2023-07-10',
+          'end': '2023-07-11',
+          'lat': 52.1077,
+          'lon': 22.1306,
+          'azimuth': 0,
+          'angle': 30,
+          'peak_power': 7000,
+        }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      // .then(data => setData(data))
+      .then(data => console.log(data));
+  }, []);
+
 
   return (
-    <FluentProvider theme={darkTheme}>
+    <FluentProvider theme={lightTheme}>
       <Stack horizontalAlign="center" styles={stackStyles}>
-        <Stack style={{width: '60%', border: '1px solid #193253', padding: '1.5rem', margin: '1.5rem'}}>
+        <Stack style={{ width: '60%', border: '1px solid #193253', padding: '1.5rem', margin: '1.5rem' }}>
           <h1>Szacunkowa Produkcja Energii z fotowoltaiki</h1>
           <span>Wprowadź informacje na temat instalacji i sprawdź estymowaną historyczną produkcję energii na podstawie przygotowanych danych</span>
           <Stack style={{ border: '1px solid', padding: '1rem', margin: '1rem' }} horizontal disableShrink horizontalAlign="space-between" >
@@ -55,32 +73,43 @@ function App() {
                 <Input type="number" title="kąt nachylenia" placeholder="kąt nachylenia"></Input>
                 <Input type="number" title="azymut" placeholder="azymut"></Input>
               </Stack>
+              <Stack>
+                <h3>Mapa tutaj</h3>
+              </Stack>
             </Stack>
           </Stack>
           <Stack>
-            <MapContainer style={{ height: '30vh' }} center={[51.505, -0.09]} zoom={13} scrollWheelZoom={true}>
-              <TileLayer
-
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[51.505, -0.09]}>
-                <Popup>
-                  A pretty CSS3 popup. <br /> Easily customizable.
-                </Popup>
-              </Marker>
-            </MapContainer>
-            <Input type="text" title="adres" placeholder="adres"></Input>
+            <h3>Prognozowana produkcja energii z fotowoltaiki</h3>
             { /* here is a plot from values from api*/}
-            <Plot 
-            style={{ width: '100%', height: '100%' }}
-            
-            data={[
-              {
-                x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                y: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                mode: "lines",
-              },
-            ]} layout={{ title: "Chart Title" }} />
+            <Plot
+              style={{ width: '100%', height: '100%' }}
+
+              data={[
+                {
+                  x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                  y: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                  mode: "lines",
+                },
+                {
+                  x: [1, 5, 3, 5, 5, 6, 5, 8, 5, 10],
+                  y: [1, 2, 3, 4, 5, 6, 7, 8, 9, 100],
+                  mode: "lines",
+                },
+              ]} config={{ autosizable: true }} layout={{ title: "Prognozowana produkcja energii z fotowoltaiki" }} />
+          </Stack>
+          <Stack>
+            <h3>Zysk z produkcji przy rozliczeniu net-billing</h3>
+            { /* here is a plot from values from api*/}
+            <Plot
+              style={{ width: '100%', height: '100%' }}
+
+              data={[
+                {
+                  x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                  y: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                  mode: "lines",
+                },
+              ]} layout={{ title: "Zysk z produkcji przy rozliczeniu net-billing" }} />
           </Stack>
           <Stack>
             { /* contact us component*/}
@@ -106,3 +135,4 @@ const stackStyles: Partial<IStackStyles> = {
 };
 
 export default App;
+
